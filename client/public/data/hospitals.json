@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "name": "District Hospital Bhopal",
+    "type": "District Hospital",
+    "lat": 23.2599,
+    "lng": 77.4126,
+    "state": "Madhya Pradesh",
+    "district": "Bhopal",
+    "address": "Jail Road, Bhopal",
+    "services": ["Emergency", "X-ray", "TB Diagnosis", "General Physician"]
+  },
+  {
+    "id": 2,
+    "name": "PHC Gandhi Nagar",
+    "type": "PHC",
+    "lat": 23.2854,
+    "lng": 77.4802,
+    "state": "Madhya Pradesh",
+    "district": "Bhopal",
+    "address": "Gandhi Nagar, Bhopal",
+    "services": ["General OPD", "Basic X-ray", "TB Screening"]
+  },
+  {
+    "id": 3,
+    "name": "CHC Misrod",
+    "type": "CHC",
+    "lat": 23.1990,
+    "lng": 77.4870,
+    "state": "Madhya Pradesh",
+    "district": "Bhopal",
+    "address": "Misrod, Bhopal",
+    "services": ["X-ray", "24x7 OPD", "TB Treatment"]
+  },
+  {
+    "id": 4,
+    "name": "TB Diagnostic Center Bhopal",
+    "type": "TB Center",
+    "lat": 23.2524,
+    "lng": 77.4445,
+    "state": "Madhya Pradesh",
+    "district": "Bhopal",
+    "address": "Ashoka Garden, Bhopal",
+    "services": ["TB Screening", "Sputum Test", "Radiology"]
+  },
+  {
+    "id": 5,
+    "name": "PHC Ayodhya Bypass",
+    "type": "PHC",
+    "lat": 23.2627,
+    "lng": 77.4600,
+    "state": "Madhya Pradesh",
+    "district": "Bhopal",
+    "address": "Ayodhya Bypass Road, Bhopal",
+    "services": ["General OPD", "TB Screening", "Minor Injuries"]
+  },
+  {
+    "id": 6,
+    "name": "Community Health Center Berasia",
+    "type": "CHC",
+    "lat": 23.6315,
+    "lng": 77.4300,
+    "state": "Madhya Pradesh",
+    "district": "Bhopal",
+    "address": "Berasia, Bhopal",
+    "services": ["X-ray", "Emergency", "General Medicine"]
+  },
+  {
+    "id": 7,
+    "name": "PHC Kolar Road",
+    "type": "PHC",
+    "lat": 23.1815,
+    "lng": 77.3825,
+    "state": "Madhya Pradesh",
+    "district": "Bhopal",
+    "address": "Kolar Road, Bhopal",
+    "services": ["OPD", "TB Screening", "Maternal Care"]
+  },
+  {
+    "id": 8,
+    "name": "Sehore District Hospital",
+    "type": "District Hospital",
+    "lat": 23.2020,
+    "lng": 76.9770,
+    "state": "Madhya Pradesh",
+    "district": "Sehore",
+    "address": "Near Bus Stand, Sehore",
+    "services": ["Emergency", "X-ray", "TB Diagnosis", "General Physician"]
+  },
+  {
+    "id": 9,
+    "name": "PHC Ichhawar",
+    "type": "PHC",
+    "lat": 23.0424,
+    "lng": 76.8844,
+    "state": "Madhya Pradesh",
+    "district": "Sehore",
+    "address": "Ichhawar, Sehore",
+    "services": ["General OPD", "Basic X-ray", "TB Screening"]
+  },
+  {
+    "id": 10,
+    "name": "CHC Ashta",
+    "type": "CHC",
+    "lat": 23.0202,
+    "lng": 76.7200,
+    "state": "Madhya Pradesh",
+    "district": "Sehore",
+    "address": "Ashta, Sehore",
+    "services": ["X-ray", "24x7 OPD", "TB Treatment"]
+  }
+]
