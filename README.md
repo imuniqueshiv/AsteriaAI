@@ -158,8 +158,8 @@ Final Risk = f(Symptom Score + Image Probability)
 ### Clone Repository
 
 ```bash
-git clone https://github.com/your-username/asteria-ai.git
-cd asteria-ai
+git clone https://github.com/imuniqueshiv/AsteriaAI.git
+cd AsteriaAI
 ```
 
 ### Server Setup
