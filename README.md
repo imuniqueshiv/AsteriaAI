@@ -1,45 +1,47 @@
-🩺 Asteria AI
+# 🩺 Asteria AI
 
-Offline-First Intelligent Health Screening & Clinical Triage System
+## Offline-First Intelligent Health Screening & Clinical Triage System
 
 Asteria AI is an offline-first, multi-stage health screening and risk-assessment system designed for low-resource and rural healthcare settings, especially in India.
 It bridges the critical gap between early symptoms and formal clinical diagnosis using AI-assisted triage, not diagnosis.
 
-⚠️ Medical Disclaimer
-Asteria AI is a clinical decision-support & triage tool, NOT a diagnostic system.
+---
+
+## ⚠️ Medical Disclaimer
+
+Asteria AI is a clinical decision-support & triage tool, **NOT a diagnostic system**.
 It helps assess risk, guide next actions, and encourage timely medical consultation.
 
-🎯 Problem Statement
+---
+
+## 🎯 Problem Statement
 
 In rural and semi-urban regions:
 
-Doctors and radiologists are often hours away
-
-Patients delay care due to cost, distance, or uncertainty
-
-Symptoms are ignored until the disease becomes severe
+* Doctors and radiologists are often hours away
+* Patients delay care due to cost, distance, or uncertainty
+* Symptoms are ignored until the disease becomes severe
 
 Asteria AI enables early risk awareness — even without internet or imaging — and escalates care only when necessary.
 
-✨ Key Features
+---
 
-📴 Offline-First Design (Works without internet)
+## ✨ Key Features
 
-🧠 Symptom-Based Clinical Screening
+* 📴 Offline-First Design (Works without internet)
+* 🧠 Symptom-Based Clinical Screening
+* 🫁 Chest X-ray AI (CNN-based)
+* 🔥 Explainability with Grad-CAM
+* 🔗 Fusion Model (Symptoms + Image)
+* ⚠️ Uncertainty & Low-Confidence Handling
+* 📄 Auto Referral Summary for Doctors
+* 🌐 PWA-ready for field health workers
 
-🫁 Chest X-ray AI (CNN-based)
+---
 
-🔥 Explainability with Grad-CAM
+## 🧠 System Workflow (End-to-End)
 
-🔗 Fusion Model (Symptoms + Image)
-
-⚠️ Uncertainty & Low-Confidence Handling
-
-📄 Auto Referral Summary for Doctors
-
-🌐 PWA-ready for field health workers
-
-🧠 System Workflow (End-to-End)
+```
 Patient / Health Worker
         │
         ▼
@@ -76,151 +78,161 @@ Patient / Health Worker
  Final Risk + Action
  + Confidence Check
  + Referral Summary
+```
 
-🧩 Architecture Overview
-Layer	Technology
-Frontend	React.js, PWA, Tailwind CSS
-Backend	Node.js, Express
-ML Engine	Python, FastAPI
-Deep Learning	PyTorch / TensorFlow
-Explainability	Grad-CAM
-Data Handling	Multer (X-ray uploads)
-🧪 Disease Focus (Hackathon-Optimized)
+---
 
-Tuberculosis (TB)
+## 🧩 Architecture Overview
 
-Pneumonia
+| Layer          | Technology                  |
+| -------------- | --------------------------- |
+| Frontend       | React.js, PWA, Tailwind CSS |
+| Backend        | Node.js, Express            |
+| ML Engine      | Python, FastAPI             |
+| Deep Learning  | PyTorch / TensorFlow        |
+| Explainability | Grad-CAM                    |
+| Data Handling  | Multer (X-ray uploads)      |
 
-Normal
+---
 
-Chosen due to:
+## 🧪 Disease Focus (Hackathon-Optimized)
 
-High public-health impact
+* Tuberculosis (TB)
+* Pneumonia
+* Normal
 
-X-ray availability
+**Chosen due to:**
 
-Clear clinical escalation paths
+* High public-health impact
+* X-ray availability
+* Clear clinical escalation paths
 
-🔍 ML & AI Design Principles
-1️⃣ Symptom Intelligence (Offline)
+---
 
-Rule-guided + weighted symptom scoring
+## 🔍 ML & AI Design Principles
 
-Mimics a clinical interview
+### 1️⃣ Symptom Intelligence (Offline)
 
-Produces Risk + Action, not diagnosis
+* Rule-guided + weighted symptom scoring
+* Mimics a clinical interview
+* Produces Risk + Action, not diagnosis
 
-2️⃣ Imaging AI (CNN)
+### 2️⃣ Imaging AI (CNN)
 
-Transfer learning (ResNet / EfficientNet)
+* Transfer learning (ResNet / EfficientNet)
+* Trained on curated TB & Pneumonia datasets
+* Outputs probability + heatmap
 
-Trained on curated TB & Pneumonia datasets
+### 3️⃣ Explainability (Grad-CAM)
 
-Outputs probability + heatmap
+* Highlights lung regions
+* Prevents false trust
+* Helps doctors & health workers understand why
 
-3️⃣ Explainability (Grad-CAM)
-
-Highlights lung regions
-
-Prevents false trust
-
-Helps doctors & health workers understand why
-
-4️⃣ Fusion Engine (Core Innovation)
+### 4️⃣ Fusion Engine (Core Innovation)
 
 Combines:
 
+```
 Final Risk = f(Symptom Score + Image Probability)
+```
 
+* More reliable than image-only AI
+* Context-aware decision making
 
-More reliable than image-only AI
+### 5️⃣ Uncertainty Handling (Critical)
 
-Context-aware decision making
+* Low confidence → Safety warning
+* Prevents unsafe automation bias
 
-5️⃣ Uncertainty Handling (Critical)
+---
 
-Low confidence → Safety warning
+## 🚀 Quick Start
 
-Prevents unsafe automation bias
+### Prerequisites
 
-🚀 Quick Start
-Prerequisites
+* Node.js (v16+)
+* Python (3.8+)
+* npm / yarn
 
-Node.js (v16+)
+### Clone Repository
 
-Python (3.8+)
-
-npm / yarn
-
-Clone Repository
+```bash
 git clone https://github.com/your-username/asteria-ai.git
 cd asteria-ai
+```
 
-Server Setup
+### Server Setup
+
+```bash
 cd server
 npm install
 nodemon server.js
+```
 
-Client Setup
+### Client Setup
+
+```bash
 cd client
 npm install
 npm run dev
+```
 
-
-🔐 .env files are intentionally excluded.
+🔐 `.env` files are intentionally excluded.
 Contact repository owner for environment configuration.
 
-📦 Key Dependencies
-Client
+---
 
-react, react-dom
+## 📦 Key Dependencies
 
-axios
+### Client
 
-tailwindcss
+* react
+* react-dom
+* axios
+* tailwindcss
+* lucide-react
 
-lucide-react
+### Server
 
-Server
+* express
+* nodemon
+* dotenv
+* cors
+* multer
 
-express
+---
 
-nodemon
+## 🌍 Real-World Impact
 
-dotenv
+* 🏥 Reduces unnecessary hospital visits
+* 👩‍⚕️ Empowers ASHA & frontline workers
+* 🕒 Enables early intervention
+* 🌐 Designed for regional language adaptation
 
-cors
+---
 
-multer
+## ⚖️ Ethics & Safety
 
-🌍 Real-World Impact
+* No automated diagnosis
+* Clear confidence thresholds
+* Explicit referral guidance
+* Human-in-the-loop philosophy
 
-🏥 Reduces unnecessary hospital visits
+---
 
-👩‍⚕️ Empowers ASHA & frontline workers
+## 🌍 Why Asteria AI?
 
-🕒 Enables early intervention
-
-🌐 Designed for regional language adaptation
-
-⚖️ Ethics & Safety
-
-No automated diagnosis
-
-Clear confidence thresholds
-
-Explicit referral guidance
-
-Human-in-the-loop philosophy
-
-🌍 Why Asteria AI?
 In rural India, the nearest radiologist might be hours away. Asteria AI empowers ASHA workers and frontline staff to:
 
-Reduce unnecessary travel: Patients only travel to district hospitals if the risk is High.
+* Reduce unnecessary travel: Patients only travel to district hospitals if the risk is High.
+* Empower Health Workers: Provides a digital "second opinion" where no doctors exist.
+* Language Friendly: Designed to be adapted into regional languages for better accessibility.
 
-Empower Health Workers: Provides a digital "second opinion" where no doctors exist.
+---
 
-Language Friendly: Designed to be adapted into regional languages for better accessibility.
+## 📝 License & Ethics
 
-📝 License & Ethics
-This project is built for a hackathon. It includes clear medical disclaimers. It is designed to encourage professional consultation, not replace it.
+This project is built for a hackathon.
+It includes clear medical disclaimers.
+It is designed to encourage professional consultation, not replace it.
