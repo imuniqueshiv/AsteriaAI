@@ -56,12 +56,12 @@ const Header = () => {
 
         <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-200 to-blue-400">
-            Offline-first. AI-powered Diagnostics.
+            Offline-First. Intelligent Health Triage.
           </span>
 
           <br className="md:hidden" />
           <span className="block text-xl md:text-3xl mt-2 font-medium text-white/80">
-            Transforming Rural Healthcare Delivery
+            Empowering Underserved Communities
           </span>
         </h2>
       </div>
@@ -72,13 +72,13 @@ const Header = () => {
       </h1>
 
       {/* Title */}
-      <h2 className="text-3xl sm:text-5xl font-semibold mb-4">
-        Chest X-ray Screening for Rural Communities
+      <h2 className="text-3xl sm:text-5xl font-semibold mb-4 max-w-4xl">
+        Multi-Stage Health Screening & Risk Assessment
       </h2>
 
       {/* Subtitle */}
-      <p className="mb-8 max-w-md text-lg opacity-90 leading-relaxed">
-        Accurate, offline assessment for TB and pneumonia — built for ASHA workers and low-resource clinics.
+      <p className="mb-8 max-w-2xl text-lg opacity-90 leading-relaxed">
+        Understand your health risk early. Start with symptom-only logic and escalate to AI-powered X-ray analysis only when necessary — designed to guide patients and ASHA workers to the right care at the right time.
       </p>
 
       {/* Start Screening Dropdown */}
@@ -87,26 +87,26 @@ const Header = () => {
           onClick={toggleDropdown}
           className="border border-white rounded-full px-8 py-2.5 hover:bg-white hover:text-black transition-all text-lg flex items-center gap-2"
         >
-          Start Screening ▾
+          Begin Screening ▾
         </button>
 
         {/* Dropdown Menu */}
         {dropdownOpen && (
-          <div className="absolute mt-2 w-56 right-0 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl shadow-lg py-2 z-50">
+          <div className="absolute mt-2 w-56 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl shadow-lg py-2 z-50">
 
             {/* BEFORE LOGIN OPTIONS */}
             {!isLoggedin ? (
               <>
                 <button
                   onClick={handleGuestStart}
-                  className="block w-full text-left px-4 py-2 hover:bg-white/20 transition-all"
+                  className="block w-full text-left px-4 py-2 hover:bg-white/20 transition-all text-sm"
                 >
                   Guest Mode
                 </button>
 
                 <button
                   onClick={() => navigate('/login')}
-                  className="block w-full text-left px-4 py-2 hover:bg-white/20 transition-all"
+                  className="block w-full text-left px-4 py-2 hover:bg-white/20 transition-all text-sm"
                 >
                   Login / Sign Up
                 </button>
@@ -116,16 +116,16 @@ const Header = () => {
               <>
                 <button
                   onClick={() => handleRoleSelect('staff')}
-                  className="block w-full text-left px-4 py-2 hover:bg-white/20 transition-all"
+                  className="block w-full text-left px-4 py-2 hover:bg-white/20 transition-all text-sm"
                 >
-                  Health Staff Mode
+                  Health Worker (ASHA) Mode
                 </button>
 
                 <button
                   onClick={() => handleRoleSelect('patient')}
-                  className="block w-full text-left px-4 py-2 hover:bg-white/20 transition-all"
+                  className="block w-full text-left px-4 py-2 hover:bg-white/20 transition-all text-sm"
                 >
-                  Patient Mode
+                  Individual Patient Mode
                 </button>
               </>
             )}

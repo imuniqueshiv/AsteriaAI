@@ -14,7 +14,7 @@ export const AppContextProvider = (props) => {
   const [userData, setUserData] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // NEW: Role Mode
+  // Mode
   const [userMode, setUserMode] = useState(
     localStorage.getItem("userMode") || null
   );
@@ -24,46 +24,53 @@ export const AppContextProvider = (props) => {
     localStorage.setItem("userMode", mode);
   };
 
-  // NEW: User History
+  // History
   const [userHistory, setUserHistory] = useState([]);
 
-  // Fetch Screening History
+  // Fetch user history
   const fetchUserHistory = async () => {
     try {
-      const { data } = await axios.get(`${backendUrl}/api/report/history`);
+      const { data } = await axios.get(`${backendUrl}/api/report/history`, {
+        withCredentials: true,
+      });
+
       if (data.success) {
         setUserHistory(data.reports);
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to fetch user history");
+      toast.error("Failed to fetch history");
     }
   };
 
   // AUTH CHECK
   const getAuthState = async () => {
     try {
-      const { data } = await axios.get(`${backendUrl}/api/auth/is-auth`);
+      const { data } = await axios.get(`${backendUrl}/api/auth/is-auth`, {
+        withCredentials: true,
+      });
 
       if (data.success) {
         setIsLoggedin(true);
         getUserData();
-        fetchUserHistory(); // NEW: load history when user logs in
+        fetchUserHistory(); 
       } else {
         setIsLoggedin(false);
       }
     } catch (error) {
       if (!isLoggingOut) {
-        toast.error("Not Authorized. Please login again.");
+        console.log("Auth state failed:", error);
       }
       setIsLoggedin(false);
     }
   };
 
-  // GET USER DATA
+  // USER DATA
   const getUserData = async () => {
     try {
-      const { data } = await axios.get(`${backendUrl}/api/user/data`);
+      const { data } = await axios.get(`${backendUrl}/api/user/data`, {
+        withCredentials: true,
+      });
 
       if (data.success) {
         setUserData(data.userData);
@@ -88,13 +95,11 @@ export const AppContextProvider = (props) => {
     getUserData,
     setIsLoggingOut,
 
-    // NEW VALUES
     userMode,
     setUserMode: updateUserMode,
 
-    // NEW HISTORY VALUES
     userHistory,
-    fetchUserHistory,
+    // fetchUserHistory,
   };
 
   return (

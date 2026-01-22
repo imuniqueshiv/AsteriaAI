@@ -1,27 +1,28 @@
 import jwt from "jsonwebtoken";
 
-const userAuth = async (req, res, next)=>{
+const userAuth = (req, res, next) => {
+  const { token } = req.cookies;
 
-    const {token} = req.cookies;
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized. Login required.",
+    });
+  }
 
-    if(!token){
-        return res.json({success: false, message: "Not Authorized. Login Again"}); 
-    }
-    try {
-        
-        const tokenDecode = jwt.verify(token, process.env.JWT_SECRET)
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        if(tokenDecode.id){
-            req.userId = tokenDecode.id
-        }else{
-        return res.json({success: false, message: "Not Authorized. Login Again"}); 
+    // IMPORTANT: Your whole backend uses req.userId
+    req.userId = decoded.id;
 
-        }
-        next();
-    } catch (error) {
-        res.json({success: false, message: error.message});
-
-    }
-}
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token.",
+    });
+  }
+};
 
 export default userAuth;

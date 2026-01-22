@@ -37,7 +37,7 @@ const App = () => {
 
         {/* Dashboard Page */}
         <Route path='/dashboard' element={<Dashboard />} />
-
+        <Route path='/report-details/:id' element={<ReportDetails />} />
         {/* Report Details Page */}
         <Route path='/report-details' element={<ReportDetails />} />
 

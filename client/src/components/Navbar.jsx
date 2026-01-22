@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AppContent } from "../context/AppContext";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { User, LayoutDashboard, LogOut, RefreshCcw, ShieldCheck } from "lucide-react";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -21,7 +22,6 @@ const Navbar = () => {
   const sendVerificationOtp = async () => {
     try {
       axios.defaults.withCredentials = true;
-
       const { data } = await axios.post(backendUrl + "/api/auth/send-verify-otp");
 
       if (data.success) {
@@ -64,87 +64,89 @@ const Navbar = () => {
   };
 
   return (
-    <div className="w-full flex justify-between items-center p-4 sm:p-6 sm:px-24 absolute top-0 z-50">
-      <button onClick={() => navigate("/")}>
-        <img src={assets.logo} alt="logo" className="w-28 sm:w-32" />
+    <div className="w-full flex justify-between items-center p-4 sm:p-6 sm:px-24 absolute top-0 z-[100]">
+      {/* Logo */}
+      <button onClick={() => navigate("/")} className="hover:opacity-80 transition-opacity">
+        <img src={assets.logo} alt="Asteria Logo" className="w-28 sm:w-32" />
       </button>
 
       {userData ? (
         <div className="flex items-center gap-6">
-
-          {/* Mode Label */}
-          <div className="hidden sm:flex flex-col items-end mr-3">
+          {/* Mode Badge */}
+          <div className="hidden sm:flex items-center gap-2">
             {userMode ? (
-              <span className="px-4 py-1 rounded-full text-sm bg-white/20 text-white shadow">
-                {userMode === "staff" ? "Health Staff" : "Patient"}
-              </span>
+              <div className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10 backdrop-blur-md border border-white/20 text-blue-300 shadow-xl">
+                {userMode === "staff" ? "ASHA Health Staff" : "Patient Mode"}
+              </div>
             ) : (
               <button
                 onClick={() => navigate("/select-role")}
-                className="px-4 py-1 rounded-full text-sm bg-blue-500 hover:bg-blue-600 text-white shadow"
+                className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-600 hover:bg-blue-500 text-white shadow-lg transition-all"
               >
                 Select Role
               </button>
             )}
           </div>
 
-          {/* Profile Icon */}
-          <div className="w-8 h-8 flex justify-center items-center rounded-full bg-black text-white relative group cursor-pointer">
-            {userData.name[0].toUpperCase()}
+          {/* Profile Dropdown Container */}
+          <div className="relative group">
+            <div className="w-10 h-10 flex justify-center items-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-700 text-white font-bold border border-white/20 shadow-lg cursor-pointer transform group-hover:scale-105 transition-all">
+              {userData.name[0].toUpperCase()}
+            </div>
 
-            {/* Dropdown */}
-            <div className="absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-10">
-              <ul className="m-0 p-2 bg-gray-100 text-sm rounded shadow">
+            {/* Glassmorphic Dropdown Menu */}
+            <div className="absolute right-0 top-full pt-4 hidden group-hover:block animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="w-64 bg-[#1b1f3b]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-2">
+                
+                {/* User Info Header */}
+                <div className="px-4 py-3 border-b border-white/5 mb-2">
+                  <p className="text-xs text-white/40 uppercase tracking-tighter">Connected Account</p>
+                  <p className="text-sm font-bold truncate text-white">{userData.name}</p>
+                </div>
 
-                {/* Verify email */}
-                {!userData.isAccountVerified && (
-                  <li
-                    onClick={sendVerificationOtp}
-                    className="py-1 px-2 hover:bg-gray-200 cursor-pointer"
-                  >
-                    Verify Email
+                <ul className="space-y-1">
+                  {/* Dashboard */}
+                  <li onClick={() => navigate("/dashboard")} className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 hover:text-white rounded-xl cursor-pointer transition-all">
+                    <LayoutDashboard size={16} className="text-blue-400" />
+                    Patient Dashboard
                   </li>
-                )}
-                {/* Profile link (NEW) */}
-                <li
-                  onClick={() => navigate("/profile")}
-                  className="py-1 px-2 hover:bg-gray-200 cursor-pointer"
-                >
-                  Profile
-                </li>
-                {/* Dashboard link (NEW) */}
-                <li
-                  onClick={() => navigate("/dashboard")}
-                  className="py-1 px-2 hover:bg-gray-200 cursor-pointer"
-                >
-                  Dashboard
-                </li>
 
-                {/* Change Role */}
-                <li
-                  onClick={() => navigate("/select-role")}
-                  className="py-1 px-2 hover:bg-gray-200 cursor-pointer"
-                >
-                  Change Role
-                </li>
+                  {/* Profile */}
+                  <li onClick={() => navigate("/profile")} className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 hover:text-white rounded-xl cursor-pointer transition-all">
+                    <User size={16} className="text-purple-400" />
+                    My Profile
+                  </li>
 
-                {/* Logout */}
-                <li
-                  onClick={logout}
-                  className="py-1 px-2 hover:bg-gray-200 cursor-pointer pr-10"
-                >
-                  Logout
-                </li>
-              </ul>
+                  {/* Role Switch */}
+                  <li onClick={() => navigate("/select-role")} className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 hover:text-white rounded-xl cursor-pointer transition-all">
+                    <RefreshCcw size={16} className="text-green-400" />
+                    Switch Mode
+                  </li>
+
+                  {/* Verify Account */}
+                  {!userData.isAccountVerified && (
+                    <li onClick={sendVerificationOtp} className="flex items-center gap-3 px-4 py-2.5 text-sm text-orange-400 hover:bg-orange-500/10 rounded-xl cursor-pointer transition-all font-medium">
+                      <ShieldCheck size={16} />
+                      Verify Security
+                    </li>
+                  )}
+
+                  {/* Logout */}
+                  <li onClick={logout} className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 rounded-xl cursor-pointer transition-all font-medium mt-2 border-t border-white/5 pt-3">
+                    <LogOut size={16} />
+                    Logout
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       ) : (
         <button
           onClick={() => navigate("/login")}
-          className="flex items-center gap-2 border border-gray-300 bg-white/10 text-white rounded-full px-6 py-2 hover:bg-white hover:text-black transition-all"
+          className="flex items-center gap-2 border border-white/20 bg-white/10 backdrop-blur-md text-white rounded-full px-8 py-2.5 hover:bg-white hover:text-black transition-all font-medium text-sm shadow-xl"
         >
-          Login <img src={assets.arrow_icon} alt="" />
+          Get Started <img src={assets.arrow_icon} alt="" className="w-3" />
         </button>
       )}
     </div>
