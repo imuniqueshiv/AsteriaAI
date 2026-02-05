@@ -2,8 +2,7 @@
 
 Offline-First Intelligent Health Screening & Clinical Triage System
 
-Asteria AI is an offline-first, multi-stage health screening and risk-assessment system designed for low-resource and rural healthcare settings, especially in India.
-It bridges the critical gap between early symptoms and formal clinical diagnosis using AI-assisted triage, not diagnosis.
+Asteria AI is an offline-first, multi-stage health screening and risk-assessment system designed for low-resource and rural healthcare settings, especially in India. It bridges the critical gap between early symptoms and formal clinical diagnosis using AI-assisted triage, not diagnosis.
 
 ⚠️ Medical Disclaimer
 
@@ -14,11 +13,11 @@ It helps assess risk, guide next actions, and encourage timely medical consultat
 
 In rural and semi-urban regions:
 
-Doctors and radiologists are often hours away
+Doctors and radiologists are often hours away.
 
-Patients delay care due to cost, distance, or uncertainty
+Patients delay care due to cost, distance, or uncertainty.
 
-Symptoms are ignored until the disease becomes severe
+Symptoms are ignored until the disease becomes severe.
 
 Asteria AI enables early risk awareness — even without internet or imaging — and escalates care only when necessary.
 
@@ -43,17 +42,18 @@ Asteria AI enables early risk awareness — even without internet or imaging —
 🧠 System Workflow (End-to-End)
 
 graph TD;
-    Patient/Health_Worker --> Stage1[Stage 1: Symptoms <br> Local LLM Conversational Triage];
-    Stage1 --> Score[Symptom Risk Score <br> Low / Moderate / High];
+    Start[Patient / Health Worker] --> Stage1[Stage 1: Symptoms <br/> Local LLM Conversational Triage];
+    Stage1 --> Score[Symptom Risk Score <br/> Low / Moderate / High];
     Score --> Path{Risk-Based Path};
     Path -- Low --> SelfCare[Self-care / Observe];
-    Path -- Moderate/High --> Stage2[Stage 2: X-ray AI <br> CNN + Grad-CAM];
-    Stage2 --> Prob[Image Probability <br> TB / Pneumonia / Normal];
-    Prob --> Stage3[Stage 3: Fusion AI <br> Symptoms + Image];
-    Stage3 --> Final[Final Risk + Action <br> Confidence Check <br> Referral Summary];
+    Path -- Moderate/High --> Stage2[Stage 2: X-ray AI <br/> CNN + Grad-CAM];
+    Stage2 --> Prob[Image Probability <br/> TB / Pneumonia / Normal];
+    Prob --> Stage3[Stage 3: Fusion AI <br/> Symptoms + Image];
+    Stage3 --> Final[Final Risk + Action <br/> Confidence Check <br/> Referral Summary];
 
 
-Note: If the diagram above does not render, please view the text representation below:
+<details>
+<summary>Click to view Text Diagram (Offline View)</summary>
 
 Patient / Health Worker
        │
@@ -96,6 +96,8 @@ Patient / Health Worker
    Confidence Check
    Referral Summary
 
+
+</details>
 
 🧩 Architecture Overview
 
