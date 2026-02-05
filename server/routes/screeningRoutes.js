@@ -1,25 +1,27 @@
 import express from "express";
 import userAuth from "../middleware/userAuth.js";
-import { analyzeXray } from "../controllers/xrayController.js"; // Import this!
+import { analyzeXray } from "../controllers/xrayController.js"; 
 import { saveScreening } from "../controllers/screeningController.js";
 import { symptomCheck } from "../controllers/symptomController.js";
-import upload from "../middleware/multer.js"; // Ensure this path is correct for your multer config
+import upload from "../middleware/multer.js"; 
 
 const router = express.Router();
 
 /**
- * AI X-ray Analysis (The route your frontend is looking for)
+ * AI X-ray Analysis (Stage 2 Standalone)
  * URL: http://localhost:4000/api/screen/analyze
  */
 router.post("/analyze", userAuth, upload.single("xray"), analyzeXray);
 
 /**
- * Full screening (CNN + Symptoms + Fusion)
+ * Full Screening & Triage (Chat + Fusion + Optional X-Ray)
+ * URL: http://localhost:4000/api/screen/save-screening
+ * This handles the new "Run Triage Assessment" button.
  */
-router.post("/save", userAuth, saveScreening);
+router.post("/save-screening", userAuth, saveScreening);
 
 /**
- * Symptom-only screening
+ * Legacy Symptom Check (Optional/Backup)
  */
 router.post("/symptom-check", userAuth, symptomCheck);
 

@@ -5,6 +5,7 @@ import { Mail, Calendar, MapPin, Award, CheckCircle2, AlertCircle } from "lucide
 const ProfileCard = () => {
   const { userData, userMode } = useContext(AppContent);
 
+  // 1. Basic check: If no object at all, return null
   if (!userData) return null;
 
   return (
@@ -17,7 +18,8 @@ const ProfileCard = () => {
         {/* Profile Avatar & Role Badge */}
         <div className="relative">
           <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center text-5xl md:text-6xl font-black border-4 border-white/10 shadow-2xl">
-            {userData.name[0].toUpperCase()}
+            {/* FIX 1: Safety check for name */}
+            {userData.name ? userData.name[0].toUpperCase() : "?"}
           </div>
           <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-white text-[#0d0333] text-[10px] font-black uppercase tracking-widest rounded-full shadow-xl whitespace-nowrap">
             {userMode === "staff" ? "Clinical Staff" : "Patient Account"}
@@ -28,14 +30,19 @@ const ProfileCard = () => {
         <div className="flex-1 space-y-8 w-full">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h2 className="text-3xl md:text-4xl font-black">{userData.name}</h2>
+              <h2 className="text-3xl md:text-4xl font-black">{userData.name || "User"}</h2>
               {userData.isAccountVerified ? (
                 <CheckCircle2 className="text-green-400" size={24} />
               ) : (
                 <AlertCircle className="text-orange-400" size={24} />
               )}
             </div>
-            <p className="text-white/40 font-mono text-sm tracking-tighter uppercase">ID: {userData._id.slice(-12)}</p>
+            
+            {/* FIX 2: THIS WAS THE CRASHING LINE */}
+            {/* We check if _id exists before trying to .slice() it */}
+            <p className="text-white/40 font-mono text-sm tracking-tighter uppercase">
+              ID: {userData._id ? userData._id.slice(-12) : "PENDING"}
+            </p>
           </div>
 
           {/* Data Grid */}
@@ -46,7 +53,7 @@ const ProfileCard = () => {
               </div>
               <div>
                 <p className="text-[10px] text-white/30 uppercase font-black tracking-widest">Email Address</p>
-                <p className="text-sm font-medium">{userData.email}</p>
+                <p className="text-sm font-medium">{userData.email || "N/A"}</p>
               </div>
             </div>
 

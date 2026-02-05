@@ -14,6 +14,7 @@ import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import screeningRoutes from "./routes/screeningRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import triageRouter from './routes/triageRoutes.js';
 
 // ESM __dirname fix
 const __filename = fileURLToPath(import.meta.url);
@@ -50,6 +51,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/screen", screeningRoutes); // This is where analyzeXray should live
 app.use("/api/report", reportRoutes);
+app.use('/api/triage', triageRouter);
 
 // 7. Root Test Route
 app.get("/", (req, res) => {

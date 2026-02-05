@@ -1,97 +1,104 @@
-import Report from "../models/reportModel.js";
+import Screening from "../models/screeningModel.js"; // <--- SWITCHED TO CORRECT MODEL
 
 /**
- * Saves a full screening report, including Stage 2 AI Vision explainability.
- * Updated to capture gradcamImage for Stage 3 Referral Intelligence.
+ * CONTROLLER: REPORT MANAGEMENT
+ * ---------------------------------------------------------
+ * Manages the retrieval and management of Triage Reports.
+ * Updated to fetch from the 'Screening' collection where
+ * Stage 1 (Chat) and Stage 2 (Fusion) data are stored.
+ */
+
+/**
+ * Saves a report (Legacy/Manual Endpoint).
+ * Note: Main triage flow uses screeningController.js, but this remains
+ * for specific report-only actions or legacy support.
  */
 export const saveReport = async (req, res) => {
   try {
     const {
-      xrayImage,      // Original Base64
-      gradcamImage,   // Added: Heatmap Base64 for Stage 2 explainability
-      prediction,     // e.g., 'TUBERCULOSIS'
-      probabilities,  // CNN output scores
+      xrayImage,      
+      gradcamImage,   // Optional: For Heatmap storage
+      prediction,     
+      probabilities,  
+      
+      // New Data Structure from Client
+      symptomData, // { riskScore, tags, historyLog, demographics }
+      
+      // Legacy fields
       symptomsText,
-      mcqResponses,
-      voiceSymptoms,
-      riskScore,
       riskLevel,
       confidence
     } = req.body;
 
-    // 1. Mandatory Imaging Check
-    if (!xrayImage) {
-      return res.status(400).json({
-        success: false,
-        message: "Original X-ray image data is required for clinical records",
-      });
-    }
-
     const userId = req.userId;
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized: User session expired",
-      });
-    }
 
-    // 2. Persistent Storage (Includes Grad-CAM)
-    const newReport = await Report.create({
+    // 1. Create Record using the new Screening Schema
+    const newReport = await Screening.create({
       userId,
-      xrayImage,
-      gradcamImage,   // Now correctly passed into the document creation
-      prediction,
-      probabilities,
-      symptomsText,
-      mcqResponses,
-      voiceSymptoms,
-      riskScore,
-      riskLevel,
-      confidence,
-      createdAt: new Date()
+      
+      // Map Demographics
+      patientName: symptomData?.demographics?.name || "Anonymous",
+      patientAge: symptomData?.demographics?.age || 0,
+      patientGender: symptomData?.demographics?.gender || "Unknown",
+
+      // Map Clinical Data
+      symptomScore: symptomData?.riskScore || 0,
+      symptomTags: symptomData?.tags || [],
+      chatHistory: symptomData?.historyLog || [], // <--- Critical for PDF Summary
+
+      // Map Vision Data (Optional)
+      xrayImage: xrayImage || null, 
+      gradcamImage: gradcamImage || null, // If you decide to add heatmap storage field
+      
+      // Map Results
+      prediction: prediction || "Unknown",
+      riskLevel: riskLevel || "Low Risk",
+      confidence: confidence || "0%",
+      
+      // Legacy/Fallback
+      summary: symptomsText || "Generated Report",
+      deviceId: "web-client-report",
+      synced: false
     });
 
     return res.json({ 
       success: true, 
-      message: "Stage 2 Assessment saved to secure database",
+      message: "Report record created successfully",
       report: newReport 
     });
 
   } catch (error) {
-    console.error("❌ Save Report Backend Error:", error.message);
+    console.error("❌ Save Report Error:", error.message);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /**
- * Retrieves historical screening records for the authenticated user.
+ * Retrieves historical screening records for the user.
+ * Fetches from 'Screening' so the Dashboard sees the real data.
  */
 export const getHistory = async (req, res) => {
   try {
-    const userId = req.userId || req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "User not authenticated" });
-    }
-
-    // Fetch reports with newest first for the Stage 3 Triage Dashboard
-    const reports = await Report.find({ userId }).sort({ createdAt: -1 });
+    const userId = req.userId;
+    // Fetch newest reports first
+    const reports = await Screening.find({ userId }).sort({ createdAt: -1 });
     return res.json({ success: true, count: reports.length, reports });
-    
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /**
- * Fetches a single specific report by ID for the Detailed Analysis view.
+ * Fetches a single specific report by ID.
+ * This is what the 'Report Details' page calls.
  */
 export const getReportById = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.userId || req.user?.id;
+    const userId = req.userId;
 
-    // Security: Only the owner can access their medical triage data
-    const report = await Report.findOne({ _id: id, userId: userId });
+    // Security check: Ensure user owns the report
+    const report = await Screening.findOne({ _id: id, userId });
 
     if (!report) {
       return res.status(404).json({
@@ -103,29 +110,26 @@ export const getReportById = async (req, res) => {
     return res.json({ success: true, report });
 
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Internal server error retrieving report" });
+    return res.status(500).json({ success: false, message: "Error retrieving report" });
   }
 };
 
 /**
- * Permanent deletion of a specific report to clear database memory.
+ * Permanent deletion of a report.
  */
 export const deleteReport = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.userId || req.user?.id;
+    const userId = req.userId;
 
-    const report = await Report.findOne({ _id: id, userId: userId });
+    const report = await Screening.findOne({ _id: id, userId });
 
     if (!report) {
-      return res.status(404).json({
-        success: false,
-        message: "Record not found or unauthorized for deletion",
-      });
+      return res.status(404).json({ success: false, message: "Record not found" });
     }
 
-    await Report.findByIdAndDelete(id);
-    return res.json({ success: true, message: "Clinical record successfully purged" });
+    await Screening.findByIdAndDelete(id);
+    return res.json({ success: true, message: "Record deleted successfully" });
 
   } catch (error) {
     return res.status(500).json({ success: false, message: "Database Error during deletion" });

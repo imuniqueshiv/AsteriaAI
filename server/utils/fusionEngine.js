@@ -1,124 +1,116 @@
 /**
- * fusionEngine.js
- * ------------------------------------------------
- * Combines X-ray CNN probabilities with
- * symptom-based risk scores to produce:
- * - Final probabilities
- * - Risk level
- * - Uncertainty flag
- * - Recommended actions
+ * STAGE 2 & 3: MULTI-MODAL FUSION ENGINE
+ * ---------------------------------------------------------
+ * Merges Clinical Symptom Data (Stage 1) with AI Vision Probabilities (Stage 2).
+ * * * NEW CAPABILITIES:
+ * 1. "Tag-Based Safety Overrides": Forces high-risk referrals for tags like "HEMOPTYSIS".
+ * 2. "Symptom-Only Mode": Adapts math if no X-ray is available.
  */
 
-export function fusePrediction({
-  cnnProbs,
-  symptomScores
-}) {
-  /**
-   * cnnProbs = {
-   *   TB: Number,
-   *   PNEUMONIA: Number,
-   *   NORMAL: Number
-   * }
-   *
-   * symptomScores = {
-   *   tb_symptom_score: Number,
-   *   pneumonia_symptom_score: Number
-   * }
-   */
+export const calculateFusionRisk = (symptomScore, cnnProbabilities, clinicalTags = [], isSymptomOnly = false) => {
+  
+  // ---------------------------------------------------------
+  // 1. NORMALIZE INPUTS
+  // ---------------------------------------------------------
+  
+  // Symptom Score comes as 0-100. Convert to 0.0 - 1.0
+  const normalizedSymptomScore = Math.min(Math.max(symptomScore, 0), 100) / 100;
 
-  // -----------------------------
-  // Step 1: Weighted fusion
-  // -----------------------------
-  const CNN_WEIGHT = 0.7;
-  const SYMPTOM_WEIGHT = 0.3;
+  // Extract the highest threat level from the AI Vision model.
+  const visualAnomalyScore = Math.max(
+    cnnProbabilities.TB || 0, 
+    cnnProbabilities.PNEUMONIA || 0, 
+    cnnProbabilities.ABNORMAL || 0,
+    cnnProbabilities.NORMAL ? 0 : 0 // Normal contributes 0 risk
+  );
 
-  let tb = (cnnProbs.TB * CNN_WEIGHT) +
-           (symptomScores.tb_symptom_score * SYMPTOM_WEIGHT);
+  // ---------------------------------------------------------
+  // 2. APPLY WEIGHTED FUSION FORMULA (DYNAMIC)
+  // ---------------------------------------------------------
+  let finalFusionScore = 0;
 
-  let pneumonia = (cnnProbs.PNEUMONIA * CNN_WEIGHT) +
-                  (symptomScores.pneumonia_symptom_score * SYMPTOM_WEIGHT);
-
-  let normal = cnnProbs.NORMAL * CNN_WEIGHT;
-
-  // -----------------------------
-  // Step 2: Normalize probabilities
-  // -----------------------------
-  const total = tb + pneumonia + normal;
-
-  tb /= total;
-  pneumonia /= total;
-  normal /= total;
-
-  // -----------------------------
-  // Step 3: Determine top class
-  // -----------------------------
-  const probs = { TB: tb, PNEUMONIA: pneumonia, NORMAL: normal };
-
-  const sorted = Object.entries(probs)
-    .sort((a, b) => b[1] - a[1]);
-
-  const [topLabel, topProb] = sorted[0];
-  const [, secondProb] = sorted[1];
-
-  // -----------------------------
-  // Step 4: Uncertainty detection
-  // -----------------------------
-  const UNCERTAINTY_MARGIN = 0.1;
-  const uncertainty = (topProb - secondProb) < UNCERTAINTY_MARGIN;
-
-  // -----------------------------
-  // Step 5: Risk classification
-  // -----------------------------
-  let riskLevel = "LOW";
-
-  if (topProb >= 0.65) {
-    riskLevel = "HIGH";
-  } else if (topProb >= 0.4) {
-    riskLevel = "MEDIUM";
-  }
-
-  // -----------------------------
-  // Step 6: Action recommendations
-  // -----------------------------
-  let recommendedActions = [];
-
-  if (uncertainty) {
-    recommendedActions.push(
-      "Result uncertain — recommend confirmatory testing",
-      "Clinical evaluation advised"
-    );
-  } else if (topLabel === "TB") {
-    recommendedActions.push(
-      "Refer to district hospital",
-      "Sputum test (CBNAAT / GeneXpert)",
-      "Initiate infection control precautions"
-    );
-  } else if (topLabel === "PNEUMONIA") {
-    recommendedActions.push(
-      "Start antibiotics as per protocol",
-      "Monitor oxygen saturation",
-      "Follow-up X-ray if symptoms persist"
-    );
+  if (isSymptomOnly) {
+    // --- MODE A: SYMPTOM ONLY ---
+    // If no X-ray, 100% of risk comes from symptoms.
+    // We do not let the missing X-ray drag the score down to 0.
+    finalFusionScore = normalizedSymptomScore;
   } else {
-    recommendedActions.push(
-      "No immediate abnormality detected",
-      "Advise routine follow-up if symptoms develop"
-    );
+    // --- MODE B: HYBRID FUSION ---
+    // Standard Weights: Symptoms (40%) + Imaging (60%)
+    const SYMPTOM_WEIGHT = 0.4;
+    const VISION_WEIGHT = 0.6;
+    finalFusionScore = (normalizedSymptomScore * SYMPTOM_WEIGHT) + (visualAnomalyScore * VISION_WEIGHT);
   }
 
-  // -----------------------------
-  // Final output
-  // -----------------------------
+  let overrideReason = null; // To track if we forced a score change
+
+  // ---------------------------------------------------------
+  // 3. CLINICAL OVERRIDE RULES (THE SAFETY NET)
+  // ---------------------------------------------------------
+
+  // RULE 1: IMMEDIATE LIFE THREAT (Cyanosis / Hypoxia)
+  // Tag: "EMERGENCY"
+  // Logic: Force Max Score (95%+). Immediate Hospitalization.
+  if (clinicalTags.includes("EMERGENCY") || clinicalTags.includes("HYPOXIA")) {
+    finalFusionScore = Math.max(finalFusionScore, 0.95);
+    overrideReason = "CRITICAL EMERGENCY: Immediate Hospitalization Required";
+  }
+
+  // RULE 2: CRITICAL RED FLAGS (Hemoptysis)
+  // Tag: "CRITICAL"
+  // Logic: Force High Risk (at least 80%). Coughing blood needs a specialist regardless of X-ray.
+  else if (clinicalTags.includes("CRITICAL")) {
+    finalFusionScore = Math.max(finalFusionScore, 0.80);
+    overrideReason = "Risk escalated due to Critical Symptoms (e.g., Hemoptysis)";
+  }
+
+  // RULE 3: TB SENSITIVITY BOOST
+  // Tag: "TB_FLAG"
+  // Logic: If historical/symptomatic TB signs exist, boost risk by 10% to prevent false negatives.
+  else if (clinicalTags.includes("TB_FLAG") || clinicalTags.includes("TB_HIGH_RISK")) {
+    finalFusionScore += 0.10; 
+    // Cap at 1.0
+    if (finalFusionScore > 1.0) finalFusionScore = 1.0;
+  }
+
+  // RULE 4: AI VISION OVERRIDE (Only runs if X-ray exists)
+  // Logic: If the X-ray is undeniably bad (>95%), ignore mild symptoms.
+  if (!isSymptomOnly && visualAnomalyScore > 0.95 && finalFusionScore < 0.85) {
+    finalFusionScore = 0.85;
+    overrideReason = "High Confidence AI Detection overrides mild symptoms";
+  }
+
+  // ---------------------------------------------------------
+  // 4. GENERATE FINAL OUTPUT
+  // ---------------------------------------------------------
+  const displayScore = Math.round(finalFusionScore * 100);
+
+  // Determine Triage Action
+  let riskLevel = "Low Risk";
+  let action = "Observation Advised";
+  
+  if (displayScore >= 75) {
+    riskLevel = "High Risk";
+    action = "URGENT REFERRAL: District Hospital (Specialist Review Required)";
+  } else if (displayScore >= 40) {
+    riskLevel = "Moderate Risk";
+    action = "CLINICAL REVIEW: Visit nearest PHC within 48 hours for sputum test.";
+  } else {
+    riskLevel = "Low Risk";
+    action = "HOME ISOLATION: Monitor symptoms. Return if fever persists > 3 days.";
+  }
+
   return {
-    finalPrediction: topLabel,
-    probabilities: {
-      TB: Number(tb.toFixed(3)),
-      PNEUMONIA: Number(pneumonia.toFixed(3)),
-      NORMAL: Number(normal.toFixed(3))
-    },
-    confidence: Number(topProb.toFixed(3)),
-    riskLevel,
-    uncertainty,
-    recommendedActions
+    finalScore: displayScore, 
+    riskLevel,                
+    action,                   
+    confidence: (displayScore).toFixed(1) + "%", 
+    details: {
+      mode: isSymptomOnly ? "Symptom Only" : "Multi-Modal Fusion",
+      symptomContribution: (normalizedSymptomScore * 100).toFixed(0) + "%",
+      visionContribution: isSymptomOnly ? "N/A" : (visualAnomalyScore * 100).toFixed(0) + "%",
+      dominantFactor: isSymptomOnly ? "Clinical Symptoms" : (normalizedSymptomScore > visualAnomalyScore ? "Clinical Symptoms" : "X-Ray Abnormalities"),
+      safetyOverride: overrideReason || "None"
+    }
   };
-}
+};

@@ -1,1 +1,20 @@
 .env
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# ML / Models
+ml_training/
+*.onnx
+*.pt
+*.h5
+*.pkl
+*.gguf
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+

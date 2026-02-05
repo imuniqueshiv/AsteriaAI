@@ -12,91 +12,112 @@ const screeningSchema = new mongoose.Schema(
     },
 
     // -----------------------------
-    // AI Prediction (after fusion)
+    // Patient Demographics (NEW)
+    // -----------------------------
+    patientName: {
+      type: String,
+      default: "Anonymous",
+    },
+
+    patientAge: {
+      type: Number,
+      required: true,
+    },
+
+    patientGender: {
+      type: String,
+      enum: ["Male", "Female", "Other"],
+      required: true,
+    },
+
+    // -----------------------------
+    // The Verdict (Fusion Output)
     // -----------------------------
     prediction: {
-      type: String,
-      enum: ["NORMAL", "PNEUMONIA", "TB"],
-      required: true,
+      type: String, 
+      required: true, 
     },
 
-    // -----------------------------
-    // Raw CNN Probabilities
-    // -----------------------------
-    normal: {
-      type: Number,
-      required: true,
-    },
-
-    pneumonia: {
-      type: Number,
-      required: true,
-    },
-
-    tb: {
-      type: Number,
-      required: true,
-    },
-
-    abnormal: {
-      type: Number,
-      required: true,
-    },
-
-    // -----------------------------
-    // Fusion Outputs
-    // -----------------------------
     riskLevel: {
       type: String,
-      enum: ["LOW", "MEDIUM", "HIGH"],
+      enum: ["Low Risk", "Moderate Risk", "High Risk", "LOW", "MEDIUM", "HIGH"], 
       required: true,
+    },
+
+    fusionScore: {
+      type: Number, // The final 0-100 score
+      default: 0
     },
 
     confidence: {
-      type: Number, // 0–1
+      type: String, // "98.5%"
       required: true,
     },
 
-    uncertainty: {
-      type: Boolean,
-      default: false,
-    },
-
-    recommendedActions: {
-      type: [String],
-      default: [],
-    },
-
-    summary: {
+    recommendedAction: {
       type: String,
-      required: true,
+      default: "Clinical Review Advised",
     },
 
     // -----------------------------
-    // X-ray Image
+    // STAGE 1: SYMPTOM INTELLIGENCE
     // -----------------------------
+    symptomScore: {
+      type: Number,
+      default: 0
+    },
+
+    symptomTags: {
+      type: [String], // e.g. ["CRITICAL", "TB_FLAG"]
+      default: []
+    },
+
+    // 🩺 THE CHAT LOG (Audit Trail)
+    chatHistory: [
+      {
+        sender: { type: String, enum: ["user", "ai"] },
+        text: { type: String },
+        timestamp: { type: Date, default: Date.now }
+      }
+    ],
+
+    // -----------------------------
+    // STAGE 2: AI VISION DATA
+    // -----------------------------
+    normal: { type: Number, default: 0 },
+    pneumonia: { type: Number, default: 0 },
+    tb: { type: Number, default: 0 },
+    abnormal: { type: Number, default: 0 },
+
+    // -----------------------------
+    // Metadata & Offline Sync
+    // -----------------------------
+    // FIX: Made Optional for Symptom-Only Mode
     xrayImage: {
       type: String, // base64 or local file path
-      required: true,
+      required: false, 
+      default: null
     },
 
-    // =====================================================
-    // OFFLINE-FIRST SYNC METADATA (NEW)
-    // =====================================================
     synced: {
       type: Boolean,
-      default: false, // false when saved offline
+      default: false, 
     },
 
     syncedAt: {
       type: Date,
-      default: null, // set after cloud sync
+      default: null, 
     },
 
     deviceId: {
       type: String,
-      required: true, // identifies origin device
+      required: true, 
     },
+    
+    summary: {
+      type: String,
+      required: false
+    }
   },
   {
     timestamps: true, // createdAt / updatedAt

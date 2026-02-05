@@ -1,146 +1,164 @@
 import jsPDF from "jspdf";
 
-/**
- * Generates a professional, medical-grade PDF report for Asteria AI.
- * Uses a structured layout to display Dual-View AI results and clinical triage.
- */
-export const generatePDF = async (report) => {
-  const {
-    prediction,
-    probabilities,
-    riskLevel,
-    confidence,
-    symptomsText,
-    xrayImage,
-    gradcamImage,
-    createdAt,
-    _id
-  } = report;
+export const generatePDF = (data) => {
+  // 1. Create Document
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
 
-  const pdf = new jsPDF("p", "mm", "a4");
-  const margin = 20;
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  let currentY = 20;
+  // --- COLORS ---
+  const brandColor = "#4F46E5"; // Indigo
+  const dangerColor = "#EF4444"; // Red
+  const successColor = "#10B981"; // Green
+  const secondaryColor = "#6B7280"; // Gray
 
-  // --- 1. HEADER (Medical Institute Style) ---
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(22);
-  pdf.setTextColor(40, 40, 100);
-  pdf.text("ASTERIA AI", margin, currentY);
+  // --- HEADER SECTION ---
+  // Brand Bar
+  doc.setFillColor(brandColor);
+  doc.rect(0, 0, pageWidth, 40, "F");
+
+  // Title
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22);
+  doc.setFont("helvetica", "bold");
+  doc.text("ASTERIA AI", 15, 20);
   
-  pdf.setFontSize(10);
-  pdf.setFont("helvetica", "normal");
-  pdf.setTextColor(100);
-  pdf.text("Automated Health Screening & Triage System", margin, currentY + 6);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("Automated Health Screening & Triage System", 15, 28);
+
+  // Risk Badge (Top Right)
+  const riskColor = data.riskLevel.includes("High") ? dangerColor : successColor;
+  doc.setFillColor(riskColor);
+  doc.roundedRect(pageWidth - 60, 10, 45, 12, 3, 3, "F");
   
-  pdf.setDrawColor(200);
-  pdf.line(margin, currentY + 10, pageWidth - margin, currentY + 10);
-  currentY += 20;
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(data.riskLevel.toUpperCase(), pageWidth - 55, 18);
 
-  // --- 2. PATIENT & REPORT INFO ---
-  pdf.setFontSize(10);
-  pdf.setTextColor(0);
-  pdf.setFont("helvetica", "bold");
-  pdf.text(`Report ID:`, margin, currentY);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(`${_id}`, margin + 20, currentY);
-
-  pdf.setFont("helvetica", "bold");
-  pdf.text(`Date:`, margin, currentY + 7);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(`${new Date(createdAt).toLocaleString()}`, margin + 20, currentY + 7);
-  currentY += 20;
-
-  // --- 3. PRIMARY AI FINDING ---
-  pdf.setFillColor(245, 245, 255);
-  pdf.rect(margin, currentY - 5, pageWidth - (margin * 2), 25, "F");
+  // --- PATIENT INFO (White Box) ---
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Patient Name: ${data.patientName}`, 15, 55);
+  doc.text(`Age / Sex: ${data.patientAge || "N/A"} / ${data.patientGender || "N/A"}`, 15, 62);
   
-  pdf.setFontSize(12);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("PRIMARY AI VISION FINDING:", margin + 5, currentY + 2);
-  
-  pdf.setFontSize(16);
-  pdf.setTextColor(riskLevel.includes("High") ? 200 : 0, 0, 0);
-  pdf.text(`${prediction} (${riskLevel})`, margin + 5, currentY + 10);
-  
-  pdf.setFontSize(10);
-  pdf.setTextColor(100);
-  pdf.text(`Confidence Score: ${confidence}`, margin + 5, currentY + 16);
-  currentY += 35;
+  doc.setFont("helvetica", "normal");
+  doc.text(`Report ID: ${data._id.slice(-6).toUpperCase()}`, 120, 55);
+  doc.text(`Date: ${new Date().toLocaleDateString()}`, 120, 62);
 
-  // --- 4. DUAL-VIEW IMAGING (Original & Grad-CAM) ---
-  pdf.setFontSize(12);
-  pdf.setTextColor(40, 40, 100);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("AI VISION EXPLANATION (GRAD-CAM)", margin, currentY);
-  currentY += 10;
+  doc.setDrawColor(200, 200, 200);
+  doc.line(15, 70, pageWidth - 15, 70);
 
-  const imgWidth = 80;
-  const imgHeight = 80;
+  // --- STAGE 1: CLINICAL PROFILE (The Fix) ---
+  let yPos = 85;
 
-  // Original X-Ray
-  if (xrayImage) {
-    const originalSrc = xrayImage.startsWith('data') ? xrayImage : `data:image/jpeg;base64,${xrayImage}`;
-    pdf.addImage(originalSrc, "JPEG", margin, currentY, imgWidth, imgHeight);
-    pdf.setFontSize(8);
-    pdf.text("ORIGINAL SCAN", margin + 25, currentY + imgHeight + 5);
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(brandColor);
+  doc.text("STAGE 1: CLINICAL SYMPTOM PROFILE", 15, yPos);
+
+  yPos += 10;
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
+
+  // *** THE FIX: READ THE AI SUMMARY ***
+  const summaryText = data.clinicalSummary && data.clinicalSummary.length > 5 
+    ? data.clinicalSummary 
+    : "No specific clinical red flags reported.";
+
+  // Wrap text to fit page
+  const splitSummary = doc.splitTextToSize(summaryText, pageWidth - 30);
+  doc.text(splitSummary, 15, yPos);
+
+  yPos += (splitSummary.length * 5) + 10; // Dynamic spacing based on text length
+
+  // --- STAGE 2: IMAGING ANALYSIS ---
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(brandColor);
+  doc.text("STAGE 2: AI IMAGING ANALYSIS", 15, yPos);
+
+  yPos += 10;
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
+
+  if (data.xrayImage) {
+    // Prediction Result
+    doc.text(`AI Detection: ${data.prediction}`, 15, yPos);
+    doc.text(`Confidence: ${data.confidence}`, 120, yPos);
+    yPos += 8;
+    
+    // Probabilities
+    if (data.probabilities) {
+      doc.setFontSize(8);
+      doc.setTextColor(secondaryColor);
+      const probText = `Pneumonia: ${(data.probabilities.PNEUMONIA * 100).toFixed(1)}% | TB: ${(data.probabilities.TB * 100).toFixed(1)}% | Normal: ${(data.probabilities.NORMAL * 100).toFixed(1)}%`;
+      doc.text(probText, 15, yPos);
+      yPos += 10;
+    }
+
+    // Image (Optional placement)
+    try {
+      // Add X-Ray thumbnail if valid Base64
+      const imgProps = doc.getImageProperties(data.xrayImage);
+      const imgWidth = 50;
+      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+      doc.addImage(data.xrayImage, "JPEG", 15, yPos, imgWidth, imgHeight);
+      yPos += imgHeight + 10;
+    } catch (e) {
+       doc.text("[ Image rendering failed ]", 15, yPos);
+       yPos += 10;
+    }
+  } else {
+    doc.text("[ Imaging Data Not Available ]", 15, yPos);
+    yPos += 6;
+    doc.setFontSize(9);
+    doc.setTextColor(secondaryColor);
+    doc.text("Risk assessment was performed using clinical symptom data only.", 15, yPos);
+    yPos += 15;
   }
 
-  // Grad-CAM Heatmap
-  if (gradcamImage) {
-    const gradcamSrc = gradcamImage.startsWith('data') ? gradcamImage : `data:image/jpeg;base64,${gradcamImage}`;
-    pdf.addImage(gradcamSrc, "JPEG", margin + imgWidth + 10, currentY, imgWidth, imgHeight);
-    pdf.text("AI GRAD-CAM HEATMAP", margin + imgWidth + 25, currentY + imgHeight + 5);
+  // --- RECOMMENDED ACTION ---
+  doc.setDrawColor(200, 200, 200);
+  doc.line(15, yPos, pageWidth - 15, yPos);
+  yPos += 15;
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(brandColor);
+  doc.text("RECOMMENDED ACTION", 15, yPos);
+
+  yPos += 10;
+  
+  // Dynamic Action Box
+  const actionColor = data.riskLevel.includes("High") ? dangerColor : successColor;
+  doc.setFillColor(actionColor);
+  doc.rect(15, yPos - 6, pageWidth - 30, 16, "F");
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  
+  // Default action text if prediction missing
+  let actionText = "Routine Checkup Recommended.";
+  if (data.riskLevel.includes("High")) {
+      actionText = "CRITICAL: Immediate referral to District Hospital or Pulmonologist required.";
+  } else if (data.riskLevel.includes("Moderate")) {
+      actionText = "Consultation Required: Visit Local PHC within 24 hours.";
   }
-  currentY += imgHeight + 20;
 
-  // --- 5. PROBABILITY BREAKDOWN (TB & PNEUMONIA) ---
-  pdf.setFontSize(12);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("QUANTITATIVE PROBABILITY ANALYSIS", margin, currentY);
-  currentY += 10;
+  doc.text(actionText, 20, yPos + 1);
 
-  if (probabilities) {
-    Object.entries(probabilities).forEach(([key, value]) => {
-      pdf.setFontSize(10);
-      pdf.setFont("helvetica", "normal");
-      pdf.setTextColor(0);
-      pdf.text(`${key}:`, margin, currentY);
-      
-      // Draw Progress Bar
-      const barWidth = 100;
-      pdf.setDrawColor(230);
-      pdf.rect(margin + 40, currentY - 3, barWidth, 4);
-      pdf.setFillColor(60, 100, 250);
-      pdf.rect(margin + 40, currentY - 3, barWidth * value, 4, "F");
-      
-      pdf.text(`${(value * 100).toFixed(2)}%`, margin + 40 + barWidth + 5, currentY);
-      currentY += 8;
-    });
-  }
-  currentY += 15;
+  // --- FOOTER ---
+  doc.setTextColor(secondaryColor);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text("Disclaimer: This is an AI-generated screening report and does not replace a doctor's diagnosis.", pageWidth / 2, pageHeight - 10, { align: "center" });
 
-  // --- 6. CLINICAL TRIAGE & SYMPTOMS ---
-  pdf.setFontSize(12);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("CLINICAL TRIAGE SUMMARY", margin, currentY);
-  currentY += 10;
-
-  pdf.setFontSize(10);
-  pdf.setFont("helvetica", "italic");
-  pdf.setTextColor(50);
-  const splitSymptoms = pdf.splitTextToSize(`Symptoms: ${symptomsText || "None recorded."}`, pageWidth - (margin * 2));
-  pdf.text(splitSymptoms, margin, currentY);
-  currentY += (splitSymptoms.length * 5) + 10;
-
-  // --- 7. DISCLAIMER ---
-  pdf.setFontSize(8);
-  pdf.setFont("helvetica", "normal");
-  pdf.setTextColor(150);
-  const disclaimer = "DISCLAIMER: Asteria AI is a decision-support tool, not a definitive diagnostic system. Results must be validated by a registered medical professional. Urgency is based on AI confidence and symptom severity.";
-  const splitDisclaimer = pdf.splitTextToSize(disclaimer, pageWidth - (margin * 2));
-  pdf.text(splitDisclaimer, margin, pdf.internal.pageSize.getHeight() - 20);
-
-  // --- SAVE FILE ---
-  pdf.save(`Asteria_Report_${prediction}_${_id.slice(-6)}.pdf`);
+  // 2. Save
+  doc.save(`Asteria_Report_${data.patientName.replace(/\s+/g, "_")}.pdf`);
 };

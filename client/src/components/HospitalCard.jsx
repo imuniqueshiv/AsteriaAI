@@ -18,7 +18,7 @@ const HospitalCard = ({ data, userLocation }) => {
     "TB Center": "bg-purple-900/40 text-purple-300 border-purple-700",
   }[type] || "bg-white/10 text-white border-white/20";
 
-  const isOnline = navigator.onLine;
+  const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
   return (
     <div className="w-full bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-6 shadow-xl transition-all hover:bg-white/10 hover:border-blue-500/30 group">
@@ -55,10 +55,17 @@ const HospitalCard = ({ data, userLocation }) => {
         <div className="flex flex-wrap gap-2">
           {services.length > 0 ? (
             services.map((srv, idx) => (
-              <span key={idx} className="px-3 py-1 text-[10px] font-bold rounded-lg bg-white/5 border border-white/10 text-white/80">{srv}</span>
+              <span
+                key={idx}
+                className="px-3 py-1 text-[10px] font-bold rounded-lg bg-white/5 border border-white/10 text-white/80"
+              >
+                {srv}
+              </span>
             ))
           ) : (
-            <span className="text-white/20 text-[10px] font-bold uppercase italic">General Clinical Support</span>
+            <span className="text-white/20 text-[10px] font-bold uppercase italic">
+              General Clinical Support
+            </span>
           )}
         </div>
       </div>
@@ -92,8 +99,10 @@ const HospitalCard = ({ data, userLocation }) => {
       </div>
 
       <div className="mt-4 flex items-center gap-2 justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-         <ShieldCheck size={12} className="text-green-400" />
-         <span className="text-[9px] font-bold text-white/30 uppercase tracking-tighter">Verified Clinical Facility</span>
+        <ShieldCheck size={12} className="text-green-400" />
+        <span className="text-[9px] font-bold text-white/30 uppercase tracking-tighter">
+          Verified Clinical Facility
+        </span>
       </div>
     </div>
   );
