@@ -29,7 +29,7 @@ Asteria AI enables early risk awareness — even without internet or imaging —
 ## ✨ Key Features
 
 * 📴 Offline-First Design (Works without internet)
-* 🧠 Symptom-Based Clinical Screening
+* 🧠 **GenAI-Powered Clinical Screening (Local LLM)**
 * 🫁 Chest X-ray AI (CNN-based)
 * 🔥 Explainability with Grad-CAM
 * 🔗 Fusion Model (Symptoms + Image)
@@ -41,44 +41,50 @@ Asteria AI enables early risk awareness — even without internet or imaging —
 
 ## 🧠 System Workflow (End-to-End)
 
-```
+
 Patient / Health Worker
-        │
-        ▼
+│
+▼
 ┌──────────────────────┐
-│  Stage 1: Symptoms   │  (Offline)
-│  Structured Q&A      │
+│ Stage 1: Symptoms │ (Local LLM)
+│ AI Conversational │
+│ Triage │
 └─────────┬────────────┘
-          │
-          ▼
-   Symptom Risk Score
- (Low / Moderate / High)
-          │
-          ├── Low → Self-care / Observe
-          │
-          ├── Moderate → Doctor Visit
-          │
-          ▼
+│
+▼
+Symptom Risk Score
+(Low / Moderate / High)
+│
+▼
+(Risk-Based Path)
+│
+├── Low → Self-care / Observe
+│
+├── Moderate → Doctor Visit
+│
+▼
 ┌──────────────────────┐
-│ Stage 2: X-ray AI    │  (If available)
-│ CNN + Grad-CAM       │
+│ Stage 2: X-ray AI │ (If available)
+│ CNN + Grad-CAM │
 └─────────┬────────────┘
-          │
-          ▼
-   Image Probability
- (TB / Pneumonia / Normal)
-          │
-          ▼
+│
+▼
+Image Probability
+(TB / Pneumonia / Normal)
+│
+▼
 ┌──────────────────────┐
-│ Stage 3: Fusion AI   │
-│ Symptoms + Image     │
+│ Stage 3: Fusion AI │
+│ Symptoms + Image │
 └─────────┬────────────┘
-          │
-          ▼
- Final Risk + Action
- + Confidence Check
- + Referral Summary
-```
+│
+▼
+Final Risk + Action
+
+Confidence Check
+
+Referral Summary
+
 
 ---
 
@@ -88,6 +94,7 @@ Patient / Health Worker
 | -------------- | --------------------------- |
 | Frontend       | React.js, PWA, Tailwind CSS |
 | Backend        | Node.js, Express            |
+| **LLM Engine** | **Ollama (Qwen / Llama)** |
 | ML Engine      | Python, FastAPI             |
 | Deep Learning  | PyTorch / TensorFlow        |
 | Explainability | Grad-CAM                    |
@@ -111,11 +118,12 @@ Patient / Health Worker
 
 ## 🔍 ML & AI Design Principles
 
-### 1️⃣ Symptom Intelligence (Offline)
+### 1️⃣ Symptom Intelligence (Stage 1 - LLM)
 
-* Rule-guided + weighted symptom scoring
-* Mimics a clinical interview
-* Produces Risk + Action, not diagnosis
+* **Powered by Local LLM:** Uses quantized models (e.g., Qwen/Llama) via Ollama for offline capability.
+* **Conversational Interface:** Conducts an empathetic, context-aware clinical interview in simple English.
+* **Dynamic Logic:** Adapts follow-up questions based on patient history (e.g., Demographics, previous answers).
+* **Structured Extraction:** Converts natural language conversation into structured medical risk data.
 
 ### 2️⃣ Imaging AI (CNN)
 
@@ -133,9 +141,9 @@ Patient / Health Worker
 
 Combines:
 
-```
+
 Final Risk = f(Symptom Score + Image Probability)
-```
+
 
 * More reliable than image-only AI
 * Context-aware decision making
@@ -153,6 +161,7 @@ Final Risk = f(Symptom Score + Image Probability)
 
 * Node.js (v16+)
 * Python (3.8+)
+* **Ollama (for LLM)**
 * npm / yarn
 
 ### Clone Repository
@@ -160,79 +169,73 @@ Final Risk = f(Symptom Score + Image Probability)
 ```bash
 git clone https://github.com/imuniqueshiv/AsteriaAI.git
 cd AsteriaAI
-```
 
-### Server Setup
-
-```bash
+Server Setup
 cd server
 npm install
 nodemon server.js
-```
 
-### Client Setup
-
-```bash
+Client Setup
 cd client
 npm install
 npm run dev
-```
 
-🔐 `.env` files are intentionally excluded.
+🔐 .env files are intentionally excluded.
 Contact repository owner for environment configuration.
 
----
+📦 Key Dependencies
+Client
+react
 
-## 📦 Key Dependencies
+react-dom
 
-### Client
+axios
 
-* react
-* react-dom
-* axios
-* tailwindcss
-* lucide-react
+tailwindcss
 
-### Server
+lucide-react
 
-* express
-* nodemon
-* dotenv
-* cors
-* multer
+Server
+express
 
----
+nodemon
 
-## 🌍 Real-World Impact
+dotenv
 
-* 🏥 Reduces unnecessary hospital visits
-* 👩‍⚕️ Empowers ASHA & frontline workers
-* 🕒 Enables early intervention
-* 🌐 Designed for regional language adaptation
+cors
 
----
+multer
 
-## ⚖️ Ethics & Safety
+ollama
 
-* No automated diagnosis
-* Clear confidence thresholds
-* Explicit referral guidance
-* Human-in-the-loop philosophy
+🌍 Real-World Impact
+🏥 Reduces unnecessary hospital visits
 
----
+👩‍⚕️ Empowers ASHA & frontline workers
 
-## 🌍 Why Asteria AI?
+🕒 Enables early intervention
 
+🌐 Designed for regional language adaptation
+
+⚖️ Ethics & Safety
+No automated diagnosis
+
+Clear confidence thresholds
+
+Explicit referral guidance
+
+Human-in-the-loop philosophy
+
+🌍 Why Asteria AI?
 In rural India, the nearest radiologist might be hours away. Asteria AI empowers ASHA workers and frontline staff to:
 
-* Reduce unnecessary travel: Patients only travel to district hospitals if the risk is High.
-* Empower Health Workers: Provides a digital "second opinion" where no doctors exist.
-* Language Friendly: Designed to be adapted into regional languages for better accessibility.
+Reduce unnecessary travel: Patients only travel to district hospitals if the risk is High.
 
----
+Empower Health Workers: Provides a digital "second opinion" where no doctors exist.
 
-## 📝 License & Ethics
+Language Friendly: Designed to be adapted into regional languages for better accessibility.
 
+📝 License & Ethics
 This project is built for a hackathon.
 It includes clear medical disclaimers.
 It is designed to encourage professional consultation, not replace it.
