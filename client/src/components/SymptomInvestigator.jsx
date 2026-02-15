@@ -135,7 +135,7 @@ const SymptomInvestigator = ({ language = "en", onSubmit }) => {
         },
         // FIX: Increased timeout to 60 seconds (60000ms)
         // Summary generation takes longer than normal chat, so we need more time.
-        { timeout: 60000 }
+        { timeout: 300000 }
       );
 
       let finalSummary = "Assessment completed.";

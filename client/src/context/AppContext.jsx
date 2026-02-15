@@ -8,7 +8,15 @@ export const AppContextProvider = (props) => {
 
   axios.defaults.withCredentials = true;
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  // ✅ UPDATED: Changed localhost to your specific IP address
+  // This allows your phone to talk to the laptop.
+  // const backendUrl = "http://10.83.76.145:4000";
+  // ✅ NEW (Localhost - Works on any WiFi for the laptop)
+  // const backendUrl = "http://localhost:4000";
+  // const backendUrl = "http://10.164.5.145:4000";
+  const backendUrl = "http://172.21.154.145:4000";
+  // ✅ NEW (Hotspot IP)
+  // const backendUrl = "http://172.20.10.2:4000";
 
   const [isLoggedin, setIsLoggedin] = useState(false);
   const [userData, setUserData] = useState(null);

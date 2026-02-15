@@ -3,8 +3,8 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 import CameraCapture from "../components/CameraCapture";
 import UploadImage from "../components/UploadImage";
-import VoiceSymptoms from "../components/VoiceSymptoms";
-import TypeSymptoms from "../components/TypeSymptoms";
+// import VoiceSymptoms from "../components/VoiceSymptoms";
+// import TypeSymptoms from "../components/TypeSymptoms";
 import ResultPanel from "../components/ResultPanel";
 import Footer from "../components/Footer";
 import { AppContent } from "../context/AppContext";
@@ -139,7 +139,8 @@ const Screening = () => {
       <div className="w-full text-center mt-32 px-6 relative z-10">
         <button 
             onClick={() => setLang(lang === "en" ? "hi" : "en")}
-            className="absolute top-0 right-6 md:right-20 flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md px-4 py-2 rounded-full transition-all active:scale-95 shadow-lg"
+            // UPDATED: Added 'hidden md:flex' to hide on mobile and show on medium/large screens
+            className="absolute top-0 right-6 md:right-20 hidden md:flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md px-4 py-2 rounded-full transition-all active:scale-95 shadow-lg"
         >
             <Languages size={18} className="text-blue-300" />
             <span className="text-xs font-bold uppercase tracking-widest">
@@ -166,7 +167,8 @@ const Screening = () => {
         {/* STAGE 1: SYMPTOM SCREENING */}
         <section id="stage1-section" className="animate-in fade-in slide-in-from-bottom-10 duration-700 mb-16">
           
-          {isHealthStaff && (
+          {/* --- REMOVED EXTRA COMPONENTS (VOICE & NOTES) TO MATCH LAPTOP VIEW --- */}
+          {/* {isHealthStaff && (
              <div className="mb-12">
                <div className="flex items-center gap-2 mb-6 opacity-70">
                   <div className="h-px bg-white/20 flex-1"></div>
@@ -175,7 +177,7 @@ const Screening = () => {
                </div>
 
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                 {/* Voice Card */}
+                 
                  <div className="bg-[#0a0520]/60 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden group hover:border-blue-500/30 transition-all">
                    <div className="flex items-center gap-4 mb-6">
                      <div className="bg-blue-600/20 p-3 rounded-xl text-blue-400 border border-blue-500/20">
@@ -188,14 +190,14 @@ const Screening = () => {
                    </div>
                    <div className="opacity-90">
                       <VoiceSymptoms 
-                         setVoiceSymptoms={setVoiceSymptoms} 
-                         setPatientMCQ={setPatientMCQ} 
-                         mode={userMode} 
+                          setVoiceSymptoms={setVoiceSymptoms} 
+                          setPatientMCQ={setPatientMCQ} 
+                          mode={userMode} 
                       />
                    </div>
                  </div>
 
-                 {/* Type Card */}
+                 
                  <div className="bg-[#0a0520]/60 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden group hover:border-purple-500/30 transition-all">
                    <div className="flex items-center gap-4 mb-6">
                      <div className="bg-purple-600/20 p-3 rounded-xl text-purple-400 border border-purple-500/20">
@@ -213,11 +215,13 @@ const Screening = () => {
                </div>
              </div>
           )}
+          */}
+          {/* ------------------------------------------------------------------- */}
 
           {/* MAIN INTERVIEW (This is your Chat Box) */}
           <SymptomInvestigator 
-             language={lang} 
-             onSubmit={(data) => setStructuredSymptoms(data)} 
+              language={lang} 
+              onSubmit={(data) => setStructuredSymptoms(data)} 
           />
         </section>
 
@@ -238,11 +242,11 @@ const Screening = () => {
              <UploadImage xrayImage={xrayImage} setXrayImage={setXrayImage} />
            </div>
 
-           {xrayImage?.preview && (
+           {/* {xrayImage?.preview && (
              <div className="mt-10 flex justify-center animate-in fade-in zoom-in duration-500">
                 <img src={xrayImage.preview} alt="Scan" className="max-w-md w-full rounded-xl shadow-2xl" />
-             </div>
-           )}
+             </div> */}
+           {/* )} */}
         </section>
 
         {/* RUN BUTTON */}

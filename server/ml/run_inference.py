@@ -2,42 +2,48 @@ import sys
 import json
 import os
 import warnings
+import traceback
 
-# Silence warnings to keep JSON output clean for Node.js
+# Silence warnings to keep output clean
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
-
-try:
-    from xray_inference import run_xray_inference
-except Exception as e:
-    sys.stdout.write(json.dumps({"error": f"Import Error: {str(e)}"}))
-    sys.exit(1)
 
 def main():
-    if len(sys.argv) < 2:
-        sys.stdout.write(json.dumps({"error": "No path provided"}))
-        sys.exit(1)
-
-    image_path = sys.argv[1]
-
-    if not os.path.exists(image_path):
-        sys.stdout.write(json.dumps({"error": f"File not found: {image_path}"}))
-        sys.exit(1)
-
     try:
+        if len(sys.argv) < 2:
+            raise ValueError("No path provided")
+
+        image_path = sys.argv[1]
+
+        if not os.path.exists(image_path):
+             raise FileNotFoundError(f"Image not found: {image_path}")
+
+        # ✅ Import libraries HERE to avoid warnings before we start
+        from my_gradcam import GradCAM, overlay_heatmap
+        from xray_inference import run_xray_inference
+
+        # Read Image
         with open(image_path, "rb") as f:
             image_bytes = f.read()
 
-        # Run inference
+        # Run Inference
         result = run_xray_inference(image_bytes)
 
-        # Output ONLY JSON
-        sys.stdout.write(json.dumps(result))
-        sys.stdout.flush()
+        # ✅ CRITICAL: Wrap the JSON in tags so Node.js can find it
+        print("<<<JSON_START>>>")
+        print(json.dumps(result))
+        print("<<<JSON_END>>>")
 
     except Exception as e:
-        sys.stdout.write(json.dumps({"error": str(e)}))
-        sys.stdout.flush()
+        # Capture full error details
+        error_details = {
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+        # Print error inside tags too
+        print("<<<JSON_START>>>")
+        print(json.dumps(error_details))
+        print("<<<JSON_END>>>")
         sys.exit(1)
 
 if __name__ == "__main__":

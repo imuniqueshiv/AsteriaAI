@@ -145,4 +145,4 @@ export const chatWithTriageAI = async (req, res) => {
     console.error("❌ Controller Error:", error.message);
     return res.status(500).json({ success: false, message: "AI Busy" });
   }
-};
+};  

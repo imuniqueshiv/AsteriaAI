@@ -29,27 +29,33 @@ connectDB();
 // 2. Start Offline Sync Service (Hackathon Feature)
 startSyncService(5); 
 
+// ✅ TRAFFIC CAM: See exactly who is connecting
+app.use((req, res, next) => {
+  console.log(`📡 Incoming Request: ${req.method} ${req.url} from ${req.ip}`);
+  next();
+});
+
 // 3. Middlewares
-// IMPORTANT: Limit increased to 10mb to allow for Dual-View Base64 image transfers
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+// ✅ UPDATED: Increased to 50mb to allow High-Res Phone Camera uploads
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
 // 4. CORS Configuration
 app.use(
   cors({
-    origin: "http://localhost:5173", // Your React/Vite port
+    origin: true, // Allow connections from Phone IP
     credentials: true,
   })
 );
 
-// 5. Static Folder for Uploads (Optional but good for debugging)
+// 5. Static Folder for Uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // 6. API Routes
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
-app.use("/api/screen", screeningRoutes); // This is where analyzeXray should live
+app.use("/api/screen", screeningRoutes); 
 app.use("/api/report", reportRoutes);
 app.use('/api/triage', triageRouter);
 
@@ -62,7 +68,7 @@ app.get("/", (req, res) => {
   });
 });
 
-// 8. Global Error Handler (Prevents the 500 error from crashing the whole server)
+// 8. Global Error Handler
 app.use((err, req, res, next) => {
   console.error("Global Server Error:", err.stack);
   res.status(500).json({
@@ -73,11 +79,11 @@ app.use((err, req, res, next) => {
 });
 
 // 9. Start Server
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`
   🚀 Asteria AI Main Server Running
   ---------------------------------
-  Port: ${port}
+  Port: ${port} (Network Access Enabled)
   ML Directory: ${path.join(__dirname, "ml")}
   ---------------------------------
   `);

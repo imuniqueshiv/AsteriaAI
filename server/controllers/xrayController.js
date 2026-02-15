@@ -7,73 +7,76 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/**
- * POST /api/screen/analyze
- * Controller to bridge Node.js and the Python AI Inference Engine
- */
 export const analyzeXray = async (req, res) => {
   try {
-    // 1. Validate that Multer successfully received the file
+    // 1. Validate File
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: "X-ray image not provided or invalid file type",
+        message: "X-ray image not provided",
       });
     }
 
-    // 2. Setup absolute paths
+    // 2. Setup paths
     const imagePath = path.resolve(req.file.path);
     const scriptPath = path.join(__dirname, "../ml/run_inference.py");
 
-    /**
-     * 3. Define the Python Executable
-     * CRITICAL: If 'python' gives Code 1, replace it with the absolute path 
-     * you get by typing 'where python' in your (asteria) terminal.
-     * Example: "C:\\Users\\singh\\anaconda3\\envs\\asteria\\python.exe"
-     */
-    const pythonExecutable = "python"; 
+    // ✅ HARDCODED PYTHON PATH (To ensure we use the correct environment)
+    const pythonExecutable = "C:\\Users\\singh\\AppData\\Local\\Programs\\Python\\Python312\\python.exe";
 
     console.log(`[AI] Starting analysis for: ${req.file.filename}`);
 
-    // 4. Spawn the Python process
+    // 3. Spawn Python
     const pythonProcess = spawn(pythonExecutable, [scriptPath, imagePath]);
 
     let stdoutData = "";
     let stderrData = "";
 
-    // Collect data from Python's standard output
     pythonProcess.stdout.on("data", (data) => {
       stdoutData += data.toString();
     });
 
-    // Collect error messages from Python's standard error
     pythonProcess.stderr.on("data", (data) => {
       stderrData += data.toString();
     });
 
     pythonProcess.on("close", (code) => {
-      // 5. Cleanup: Always delete the temporary upload file
+      // 4. Cleanup Temp File
       if (fs.existsSync(imagePath)) {
         fs.unlink(imagePath, (err) => {
           if (err) console.error("Temp file cleanup failed:", err);
         });
       }
 
-      // 6. Handle failure (Python exit code != 0)
-      if (code !== 0) {
-        console.error(`❌ Python Error (Exit Code ${code}):\n`, stderrData);
+      // 5. Combine Output to find our tags
+      const fullOutput = stdoutData + stderrData;
+
+      // ✅ KEY FIX: Look for data strictly between our tags
+      const match = fullOutput.match(/<<<JSON_START>>>([\s\S]*?)<<<JSON_END>>>/);
+
+      if (!match) {
+        console.error("❌ Python Output Invalid (No Tags Found):", fullOutput);
         return res.status(500).json({
           success: false,
-          message: "The AI engine encountered an error.",
-          debug: stderrData // Helps you see missing libraries in terminal
+          message: "AI Engine failed to return valid data.",
+          debug: fullOutput // Allows you to see the raw error in the frontend popup
         });
       }
 
-      // 7. Parse result and send to Frontend
       try {
-        const result = JSON.parse(stdoutData.trim());
+        // Parse the clean JSON extracted from the tags
+        const result = JSON.parse(match[1].trim());
 
-        // We return a flat object to match your React component expectations
+        if (result.error) {
+          console.error("❌ Python Script Error:", result.error);
+          return res.status(500).json({
+            success: false,
+            message: "AI Analysis Failed",
+            debug: result.traceback || result.error
+          });
+        }
+
+        // Success!
         return res.json({
           success: true,
           prediction: result.prediction,
@@ -83,18 +86,19 @@ export const analyzeXray = async (req, res) => {
         });
 
       } catch (err) {
-        console.error("❌ JSON Parse Error. Raw Output was:", stdoutData);
+        console.error("❌ JSON Parse Failed:", err);
         return res.status(500).json({
           success: false,
-          message: "Failed to process AI output. Ensure Python returns valid JSON.",
+          message: "Failed to parse AI results.",
         });
       }
     });
+
   } catch (error) {
     console.error("❌ Controller Exception:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Internal Server Error during X-ray analysis",
+      message: error.message || "Internal Server Error",
     });
   }
 };
