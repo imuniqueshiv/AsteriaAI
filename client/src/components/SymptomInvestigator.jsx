@@ -1,3 +1,4 @@
+//import React, { useState, useContext, useRef, useEffect } from "react";
 import React, { useState, useContext, useRef, useEffect } from "react";
 import axios from "axios";
 import { AppContent } from "../context/AppContext";
@@ -8,7 +9,8 @@ import {
 const SymptomInvestigator = ({ language = "en", onSubmit }) => {
   const { backendUrl } = useContext(AppContent);
 
-  const [demographics, setDemographics] = useState({ name: "", age: "", gender: "" });
+  // Added height and weight to demographics
+  const [demographics, setDemographics] = useState({ name: "", age: "", gender: "", height: "", weight: "", bmi: null, bmiCategory: "" });
   const [isRegistered, setIsRegistered] = useState(false);
   
   const [history, setHistory] = useState([]);
@@ -42,15 +44,41 @@ const SymptomInvestigator = ({ language = "en", onSubmit }) => {
     }
   }, [loading]);
 
+  // BMI Calculation Logic
+  const calculateBMI = (heightCm, weightKg) => {
+    const heightM = parseFloat(heightCm) / 100;
+    const weight = parseFloat(weightKg);
+    if (heightM > 0 && weight > 0) {
+      const bmiValue = (weight / (heightM * heightM)).toFixed(1);
+      let category = "Normal";
+      if (bmiValue < 18.5) category = "Underweight";
+      else if (bmiValue >= 25 && bmiValue < 29.9) category = "Overweight";
+      else if (bmiValue >= 30) category = "Obese";
+      return { value: bmiValue, category };
+    }
+    return { value: null, category: "" };
+  };
+
   // Registration
   const handleRegistration = (e) => {
     e.preventDefault();
-    if (demographics.age && demographics.gender) {
+    if (demographics.age && demographics.gender && demographics.height && demographics.weight) {
+      // Calculate BMI before moving to chat
+      const bmiResult = calculateBMI(demographics.height, demographics.weight);
+      
+      // Update demographics with BMI info so backend receives it
+      const updatedDemographics = {
+        ...demographics,
+        bmi: bmiResult.value,
+        bmiCategory: bmiResult.category
+      };
+      
+      setDemographics(updatedDemographics);
       setIsRegistered(true);
       
       const startText = language === "en" 
-        ? `Hello. I am Dr. Asteria. What symptoms are you experiencing?`
-        : `नमस्ते। मैं डॉ. एस्टीरिया हूँ। आपके लक्षण क्या हैं?`;
+        ? `Hello. I am Dr. Asteria. I noted your BMI is ${bmiResult.value} (${bmiResult.category}). What symptoms are you experiencing?`
+        : `नमस्ते। मैं डॉ. एस्टीरिया हूँ। आपका बीएमआई ${bmiResult.value} (${bmiResult.category}) है। आपके लक्षण क्या हैं?`;
 
       const initialMsg = { role: "assistant", content: startText };
       setHistory([initialMsg]);
@@ -77,7 +105,7 @@ const SymptomInvestigator = ({ language = "en", onSubmit }) => {
         {
           history: chatLog,
           userResponse: trimmedInput,
-          demographics: demographics // Passing Age/Gender here
+          demographics: demographics // Passing Age/Gender/BMI here
         },
         // FIX: Increased timeout to 45 seconds to prevent network errors on slow PCs
         { timeout: 45000 } 
@@ -155,7 +183,7 @@ const SymptomInvestigator = ({ language = "en", onSubmit }) => {
       });
 
       const structuredData = {
-        demographics,
+        demographics, // Includes BMI now
         riskScore: calculateRiskScore(risk, symptoms),
         riskLevel: risk,
         symptoms,
@@ -223,7 +251,7 @@ const SymptomInvestigator = ({ language = "en", onSubmit }) => {
   // Registration Screen
   if (!isRegistered) {
     return (
-      <div className="bg-[#0a0520]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col items-center justify-center h-[500px] relative p-8 text-center">
+      <div className="bg-[#0a0520]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col items-center justify-center h-[550px] relative p-8 text-center">
         <div className="mb-6 p-4 bg-blue-600/20 rounded-full border border-blue-500/30">
           <FileText size={40} className="text-blue-400" />
         </div>
@@ -231,7 +259,7 @@ const SymptomInvestigator = ({ language = "en", onSubmit }) => {
           {language === "en" ? "Patient Registration" : "रोगी पंजीकरण"}
         </h2>
         <p className="text-white/40 text-sm mb-8 max-w-md">
-          Stage 1: Symptom Collection & Risk Assessment
+          Stage 1: Patient BMI Check & Symptom Collection
         </p>
 
         <form onSubmit={handleRegistration} className="w-full max-w-sm space-y-4">
@@ -265,9 +293,36 @@ const SymptomInvestigator = ({ language = "en", onSubmit }) => {
               <option value="Other" className="bg-[#0d0333]">Other</option>
             </select>
           </div>
+          
+          {/* New Height and Weight Inputs */}
+          <div className="flex gap-4">
+            <input 
+              type="number" 
+              required
+              min="30"
+              max="300"
+              step="0.1"
+              placeholder="Height (cm) *"
+              value={demographics.height}
+              onChange={e => setDemographics({...demographics, height: e.target.value})}
+              className="w-1/2 bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-blue-500"
+            />
+            <input 
+              type="number" 
+              required
+              min="2"
+              max="500"
+              step="0.1"
+              placeholder="Weight (kg) *"
+              value={demographics.weight}
+              onChange={e => setDemographics({...demographics, weight: e.target.value})}
+              className="w-1/2 bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
           <button 
             type="submit"
-            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-[1.02] rounded-xl text-white font-bold uppercase tracking-widest shadow-lg transition-all"
+            className="w-full py-4 mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-[1.02] rounded-xl text-white font-bold uppercase tracking-widest shadow-lg transition-all"
           >
             Begin Assessment
           </button>
@@ -300,11 +355,22 @@ const SymptomInvestigator = ({ language = "en", onSubmit }) => {
           </div>
         </div>
 
-        <div className={`px-4 py-2 rounded-full border flex items-center gap-2 ${getRiskColor()}`}>
-          <Activity size={16} />
-          <span className="text-xs font-black uppercase tracking-widest">
-            Risk: {risk}
-          </span>
+        <div className="flex gap-3">
+          {/* New BMI Badge */}
+          {demographics.bmi && (
+            <div className="hidden md:flex px-4 py-2 rounded-full border items-center gap-2 text-blue-300 border-blue-500/50 bg-blue-500/10">
+               <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">
+                 BMI: {demographics.bmi}
+               </span>
+            </div>
+          )}
+
+          <div className={`px-4 py-2 rounded-full border flex items-center gap-2 ${getRiskColor()}`}>
+            <Activity size={16} />
+            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">
+              Risk: {risk}
+            </span>
+          </div>
         </div>
       </div>
 
